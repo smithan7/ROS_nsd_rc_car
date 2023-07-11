@@ -1,0 +1,12 @@
+max_steering_angle: 0.5435
+max_steering_rate: 0.3294
+max_speed: 62.5856
+characteristic_velocity: 20.0
+steer_damping: 3.3333
+accel_damping: 3.3333
+max_braking_accel: -9.81
+max_forward_accel: 3.3
+max_centripetal_accel: 9.81
+car_length: 0.7112
+car_mass: 12.7005
+lateral_tire_stiffness: 145.0

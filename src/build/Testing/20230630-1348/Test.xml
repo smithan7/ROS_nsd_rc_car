@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Site BuildName="(empty)"
+	BuildStamp="20230630-1348-Experimental"
+	Name="andy-desktop"
+	Generator="ctest-3.10.2"
+	CompilerName="/usr/bin/aarch64-linux-gnu-g++"
+	CompilerVersion="7.5.0"
+	OSName="Linux"
+	Hostname="andy-desktop"
+	OSRelease="4.9.201-tegra"
+	OSVersion="#1 SMP PREEMPT Fri Jul 9 08:56:59 PDT 2021"
+	OSPlatform="aarch64"
+	Is64Bits="1"
+	VendorString=""
+	VendorID="Unknown Manufacturer"
+	FamilyID="8"
+	ModelID="0"
+	ProcessorCacheSize="0"
+	NumberOfLogicalCPU="4"
+	NumberOfPhysicalCPU="1"
+	TotalVirtualMemory="3886"
+	TotalPhysicalMemory="7773"
+	LogicalProcessorsPerPhysical="4"
+	ProcessorClockFrequency="0"
+	>
+	<Testing>
+		<StartDateTime>Jun 30 07:23 PDT</StartDateTime>
+		<StartTestTime>1688135023</StartTestTime>
+		<TestList/>
+		<EndDateTime>Jun 30 07:23 PDT</EndDateTime>
+		<EndTestTime>1688135023</EndTestTime>
+		<ElapsedMinutes>0</ElapsedMinutes>
+	</Testing>
+</Site>

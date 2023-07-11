@@ -1,0 +1,8 @@
+prefix=/home/andy/catkin_ws/src/build/devel
+
+Name: car_simulator
+Description: Description of car_simulator
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

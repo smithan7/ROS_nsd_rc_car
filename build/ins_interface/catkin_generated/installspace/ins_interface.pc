@@ -1,0 +1,8 @@
+prefix=/home/andy/catkin_ws/install
+
+Name: ins_interface
+Description: Description of ins_interface
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
