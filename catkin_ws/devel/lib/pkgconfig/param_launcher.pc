@@ -1,0 +1,8 @@
+prefix=/home/andy/catkin_ws/devel
+
+Name: param_launcher
+Description: Description of param_launcher
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 
