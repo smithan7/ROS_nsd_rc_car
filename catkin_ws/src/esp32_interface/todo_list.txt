@@ -1,0 +1,67 @@
+NowDos
+
+Architectural Todos
+- Decide if I should switch to Python3?
+    - Seems pretty straight forward
+    - Python 2 is no longer supported...
+    - https://gist.github.com/azidanit/9950aa5408acdbe25f0ec431654da8d6
+- Stanley controller node
+    - output should be desired speed and PWM - output both!
+        - would be nice to have it only output one but you need current speed to set the PWM
+        - car simulator takes in desired speed
+        - EPS32 takes in PWM
+        - plot the path
+- keyboard controller node
+    - control the car and take over RC control
+- state estimation node
+- pull optimized track from file
+    - work with britton to identify preferred format
+- PWM -> acceleration estimator (can be offline)
+
+
+Big Todos
+- Stanley controller node
+    - pull controller input from params
+- get the aceinna ins working!
+- ESP32_Interface
+    - Make this auto-calibrate so that it knows the mean PWM values and range
+- Plot path to rviz using marker arrays
+    - show centerline and edges
+    - show planned path (possibly as a path msg?)
+    - make RVIZ center on car frame in moving world
+    - launch RVIZ from launch file with config file
+
+Convenient Todos
+- car_simulator/car_simulator_node
+    - convert between PWM and car car_simulator input values in a better way
+        - Right now I linearly interpolate PWM between 1000 to 2000 PW and car state expects -9.81 to 3.3 m/s^2
+- car_simulator/car_simulator_node
+    - in gnss publisher I currently do not publish lat/lon. Write a conversion piece around lat/lon
+    - in map_received_speed_to_car I currently get accel desired by dividing by 1s - this was chosen arbitrarily
+
+Completed Todos:
+- General
+    - ROS python cannot find Pandas
+- car_simulator/car_simulator_node
+    - setup param files to read in the car's description and location (for generating gnss lat/lon)
+    - verify the car will move with some inputs
+- Stanley controller node
+    - verify import track
+    - verify pandas in python 2.7 does all functions of track (not supported anymore)
+    - set up publisher and subscriber
+        - pub out commands
+        - sub in pose and speed
+    - car_simulator_node
+        - publishing in a steering command does NOT change the steering angle - always fixed at hardest left turn (I think Left)
+    - move over and test controller
+        - test speed controller works
+        - test steering controller works
+        - test combined controller works
+        - test it follows tracks
+- General
+    - launch file to launch everything
+        - multiple nodes and the param files
+- ESP32_Interface/PWM_Measure.msg
+    - add std_msgs/Header to include time stamp. This might already be "done" but cmake was acting weird between catkin_make and VS code cmake leading to clock skewing
+- ESP32_Interface/PWM_CMD.msg
+    - add std_msgs/Header to include time stamp. This might already be "done" but cmake was acting weird between catkin_make and VS code cmake leading to clock skewing
