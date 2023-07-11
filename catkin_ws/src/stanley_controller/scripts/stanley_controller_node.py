@@ -67,6 +67,8 @@ class Stanley_Controller:
         self.car_speed = 0
         self.car_heading = 0
 
+        self.plot_path_as_marker_Array()
+
         # setup ROS interfaces
         self.cmd_pub = rospy.Publisher('input_commands', Car_Control, queue_size=10)
         self.pos_sub = rospy.Subscriber('odom', Odometry, self.odom_callback)
@@ -77,40 +79,46 @@ class Stanley_Controller:
         Plot the path as a marker array so I can see it in RVIZ
         '''
         #plt.plot([self.track_df["outer_x"].tail(1), self.track_df["outer_x"][0]], [self.track_df["outer_y"].tail(1), self.track_df["outer_y"][0]], 'k')
+        self.marker_pub = rospy.Publisher('marker', MarkerArray, latch=True, queue_size=10)
         self.track_markers = MarkerArray()
+
+        for index, row in self.track.track_df.iterrows():
+
+            marker = Marker()
+
+            marker.id = index
+            marker.header.stamp = rospy.get_rostime()
+            marker.header.frame_id = "/odom"
+            marker.type = marker.SPHERE
+            marker.action = marker.ADD
+            marker.scale = Vector3(1.0, 1.0, 3.0)
+            marker.color.r = 1.0
+            marker.color.a = 1.0
+            marker.pose.orientation.w = 1.0
+            marker.pose.position.x = row["outer_x"]
+            marker.pose.position.y = row["outer_y"]
+            marker.pose.position.z = 0.0
+
+            self.track_markers.markers.append(marker)
 
 
             marker = Marker()
-            marker.type = Marker.LINE_STRIP
 
-            marker.action = Marker.ADD
-            
-            marker.scale = Vector3(0.01, 0.01, 0)
-
-            marker.color.g = 1.0
-            marker.color.a = 1.0
-
-            x_start = 0.0
-            y_start = 0.0
-            length = 2
-            angle = 45 * math.pi/180
-            delta_th = 0.1
-
-            for th in np.arange(0.0, length, delta_th):
-                x = x_start + th * math.cos(angle)
-                y = y_start + th * math.sin(angle)
-
-                point = Point()
-                point.x = x
-                point.y = y
-
-                marker.points.append(point)
-
-            marker.id = 1
+            marker.id = index + len(self.track.track_df)
             marker.header.stamp = rospy.get_rostime()
             marker.header.frame_id = "/odom"
+            marker.type = marker.SPHERE
+            marker.action = marker.ADD
+            marker.scale = Vector3(1.0, 1.0, 3.0)
+            marker.color.r = 1.0
+            marker.color.a = 1.0
+            marker.pose.orientation.w = 1.0
+            marker.pose.position.x = row["inner_x"]
+            marker.pose.position.y = row["inner_y"]
+            marker.pose.position.z = 0.0
 
             self.track_markers.markers.append(marker)
+
 
         self.marker_pub.publish(self.track_markers)
 
@@ -133,7 +141,7 @@ class Stanley_Controller:
         '''
         
         self.nearest_edge, cross_track_error, dist_along_edge = self.track.find_nearest_edge_with_seed([self.car_x, self.car_y], self.nearest_edge, window_size=2)
-        desired_speed = self.track.track_df['speed'][self.nearest_edge]
+        desired_speed = self.track.track_df['speed'][self.nearest_edge] * 0.5
         # print("Stanley_Controllet::desired speed: ", desired_speed)
         a_des = self.controller.speed_pid.tic(self.car_speed, desired_speed)
         # print("Stanley_Controllet::desired acceleration: ", a_des)
