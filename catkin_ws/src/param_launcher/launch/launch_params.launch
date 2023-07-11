@@ -1,0 +1,5 @@
+<launch>
+    <rosparam command="load" file="$(find param_launcher)/params/esp32_interface_params.yaml"/>
+    <rosparam command="load" file="$(find param_launcher)/params/car_simulator_params.yaml"/>
+</launch>
+

@@ -1,0 +1,10 @@
+<launch>
+    <rosparam command="load" file="$(find param_launcher)/params/esp32_interface_params.yaml"/>
+    <rosparam command="load" file="$(find param_launcher)/params/car_simulator_params.yaml"/>
+    <node type="rviz" name="rviz" pkg="rviz" args="-d $(find param_launcher)/RVIZ_config/car_simulator_viewer.rviz" />
+    <node pkg="car_simulator" name="car_simulator_node" type="car_simulator_node.py" output="screen"/>
+    <!--node pkg="simple_controller" name="simple_controller_node" type="simple_controller_node.py" output="screen"/-->
+
+    <node pkg="stanley_controller" name="stanley_controller_node" type="stanley_controller_node.py" output="screen"/>
+</launch>
+
