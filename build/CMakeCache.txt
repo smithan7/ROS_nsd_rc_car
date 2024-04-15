@@ -423,8 +423,20 @@ stanley_controller_BINARY_DIR:STATIC=/home/andy/catkin_ws/build/stanley_controll
 //Value Computed by CMake
 stanley_controller_SOURCE_DIR:STATIC=/home/andy/catkin_ws/src/stanley_controller
 
+//Value Computed by CMake
+state_estimator_BINARY_DIR:STATIC=/home/andy/catkin_ws/build/state_estimator
+
+//Value Computed by CMake
+state_estimator_SOURCE_DIR:STATIC=/home/andy/catkin_ws/src/state_estimator
+
 //The directory containing a CMake configuration file for std_msgs.
 std_msgs_DIR:PATH=/opt/ros/melodic/share/std_msgs/cmake
+
+//Value Computed by CMake
+ui_interface_BINARY_DIR:STATIC=/home/andy/catkin_ws/build/user_interface
+
+//Value Computed by CMake
+ui_interface_SOURCE_DIR:STATIC=/home/andy/catkin_ws/src/user_interface
 
 //The directory containing a CMake configuration file for xmlrpcpp.
 xmlrpcpp_DIR:PATH=/opt/ros/melodic/share/xmlrpcpp/cmake
@@ -539,7 +551,7 @@ CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_NM
 CMAKE_NM-ADVANCED:INTERNAL=1
 //number of local generators
-CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=10
+CMAKE_NUMBER_OF_MAKEFILES:INTERNAL=12
 //ADVANCED property for variable: CMAKE_OBJCOPY
 CMAKE_OBJCOPY-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_OBJDUMP

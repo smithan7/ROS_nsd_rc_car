@@ -137,6 +137,8 @@ if(NOT CMAKE_INSTALL_LOCAL_ONLY)
   include("/home/andy/catkin_ws/build/param_launcher/cmake_install.cmake")
   include("/home/andy/catkin_ws/build/simple_controller/cmake_install.cmake")
   include("/home/andy/catkin_ws/build/stanley_controller/cmake_install.cmake")
+  include("/home/andy/catkin_ws/build/state_estimator/cmake_install.cmake")
+  include("/home/andy/catkin_ws/build/user_interface/cmake_install.cmake")
 
 endif()
 

@@ -1,0 +1,8 @@
+prefix=/home/andy/catkin_ws/install
+
+Name: ui_interface
+Description: Description of ui_interface
+Version: 0.0.0
+Cflags: -I${prefix}/include
+Libs: -L${prefix}/lib 
+Requires: 

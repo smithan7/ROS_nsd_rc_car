@@ -67,7 +67,7 @@ class SimulatedCarState:
 
     def __init__(self):
         rospy.init_node('Car_Simulator_node', anonymous=True)
-        self.pub = rospy.Publisher('input_commands', PWM_Cmd, queue_size=10)
+        self.pub = rospy.Publisher('input_commands', Car_Control, queue_size=10)
         self.state_pub = rospy.Publisher('input_commands', PWM_Cmd, queue_size=10)
         self.sent_speed = 0
         self.sent_steer = 0
@@ -117,16 +117,18 @@ class SimulatedCarState:
         '''
         
         # Tic the dynamic model
-        self.input_steering(self.received_desired_speed)
+        self.input_steering(self.received_desired_steer)
         self.input_accel(self.received_desired_acceleration)
         temp_time = time.time()
         dt = temp_time - self.ins_time
+        # print("Car Simulator::dt: ", dt)
         self.ins_time = temp_time
         self.tic(dt)
 
         # Extract state data to populate tf update as well as the Odom and GNSS messages
         [x,y] = self.get_2D_pos()
         th = self.get_heading_angle()
+        # print("car_simulator_node::read_INS::heading: ", th % 2.0*math.pi)
         odom_quat = tf.transformations.quaternion_from_euler(0,0,th)
 
         # update the odom TF
@@ -150,6 +152,7 @@ class SimulatedCarState:
         # print("p: ", odom.pose.covariance)
         vx = self.x[self.xdi]
         vy = self.x[self.ydi]
+        # print("car_simulator_node::read_INS:speed: ", self.x[self.fsi])
         vTh = self.get_heading_rate()
         odom.twist.twist = Twist(Vector3(vx,vy,0), Vector3(0,0,vTh))
         odom.twist.covariance = (np.eye(6) * np.array([0.1, 0.1, 0.1, # velocities in m/s
@@ -173,7 +176,7 @@ class SimulatedCarState:
     def cmds_sub_callback(self, msg):
         ''' This subscribes to the input commands topic and saves it as received.
         It will then be saved as sent at the next timer callback to be used in the next state model update '''
-        # rospy.loginfo(rospy.get_caller_id() + "I heard %s", msg)
+        # rospy.loginfo(rospy.get_caller_id() + "Car_Simulator_Node::cmds_sub_callback::msg %s", msg)
         self.received_desired_speed = msg.desired_speed
         self.received_desired_steer = msg.desired_steering_angle
         self.received_desired_acceleration = msg.desired_acceleration
@@ -201,8 +204,8 @@ class SimulatedCarState:
         msg = PWM_Cmd()
         msg.header.stamp = rospy.Time.now()
         msg.time = z_time*pow(10,6)
-        msg.steer = self.received_steer
-        msg.speed = self.received_speed
+        msg.steer = self.sent_steer
+        msg.speed = self.sent_speed
         self.cmd_pub.publish(msg)
 
     def write_serial_comands(self, event=None):
@@ -218,13 +221,13 @@ class SimulatedCarState:
     def map_received_steer_to_car(self):
         ''' This maps the PWM to a steering angle assuming the PWM is perfectly centered at 1500 and in range 1000 - 2000'''
         # TODO - [1000, 2000] is ideal and might not be realistic
-        return np.interp(self.received_steer, [1000, 2000], [-self.max_steering_angle, self.max_steering_angle])
+        return np.interp(self.received_desired_steer, [1000, 2000], [-self.max_steering_angle, self.max_steering_angle])
 
     def map_received_speed_to_car(self):
         ''' This maps the PWM to a steering angle assuming the PWM is perfectly centered at 1500 and in range 1000 - 2000'''
         # calculate the desired speed
         #TODO - [1000, 2000] is ideal and might not be realistic
-        speed_desired = np.interp(self.received_speed, [1000, 2000], [-self.max_speed, self.max_speed])
+        speed_desired = np.interp(self.received_desired_speed, [1000, 2000], [-self.max_speed, self.max_speed])
         # calculate the desired acceleration from the desired speed
         #TODO - dividing by 1s below chosed arbitrarily
         accel_desired = (speed_desired - self.get_speed()) / 1.0
@@ -232,19 +235,23 @@ class SimulatedCarState:
 
     def input_steering(self, u_steer):
         '''Take in a desired steering angle and get the resulting steering rate'''
+        # print("car_simulator::input_steer::u_steer: ", u_steer)
         # ensure the desired steering angle is possible 
         u_steer = clamp(u_steer, -self.max_steering_angle, self.max_steering_angle)
         # set the rate - will push to actual steering angle in update function
         self.x[self.sri] = self.steer_damping * (u_steer - self.x[self.sai])
         # ensure the resulting steering rate is possible
         self.x[self.sri] = clamp(self.x[self.sri], -self.max_steering_rate, self.max_steering_rate)
-        
+        # print("car_simulator::input_steer::steering input: ", self.x[self.sri])
+
     def input_accel(self, u_accel):
         '''Take in a desired acceleration and get the resulting acceleration rate (jerk)'''
+        # print("car_simulator::input_accel::u_accel: ", u_accel)
         # ensure the desired acceleration is possible 
         u_accel = clamp(u_accel, self.max_braking_accel , self.max_forward_accel)
         # set the rate - will push to actual steering angle in update function
         self.x[self.fji] = self.steer_damping * (u_accel - self.x[self.fai])
+        # print("car_simulator::input_accel::accel input: ", self.x[self.fji])
         
     def tic(self, dt):
         # 

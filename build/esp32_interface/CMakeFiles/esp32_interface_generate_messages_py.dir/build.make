@@ -53,38 +53,47 @@ CMAKE_BINARY_DIR = /home/andy/catkin_ws/build
 # Include the progress variables for this target.
 include esp32_interface/CMakeFiles/esp32_interface_generate_messages_py.dir/progress.make
 
+esp32_interface/CMakeFiles/esp32_interface_generate_messages_py: /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_Driveshaft_Encoder.py
 esp32_interface/CMakeFiles/esp32_interface_generate_messages_py: /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_PWM_Cmd.py
 esp32_interface/CMakeFiles/esp32_interface_generate_messages_py: /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_Car_Control.py
 esp32_interface/CMakeFiles/esp32_interface_generate_messages_py: /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_PWM_Measure.py
 esp32_interface/CMakeFiles/esp32_interface_generate_messages_py: /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/__init__.py
 
 
+/home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_Driveshaft_Encoder.py: /opt/ros/melodic/lib/genpy/genmsg_py.py
+/home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_Driveshaft_Encoder.py: /home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg
+/home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_Driveshaft_Encoder.py: /opt/ros/melodic/share/std_msgs/msg/Header.msg
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating Python from MSG esp32_interface/Driveshaft_Encoder"
+	cd /home/andy/catkin_ws/build/esp32_interface && ../catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/genpy/cmake/../../../lib/genpy/genmsg_py.py /home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg -Iesp32_interface:/home/andy/catkin_ws/src/esp32_interface/msg -Istd_msgs:/opt/ros/melodic/share/std_msgs/cmake/../msg -p esp32_interface -o /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg
+
 /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_PWM_Cmd.py: /opt/ros/melodic/lib/genpy/genmsg_py.py
 /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_PWM_Cmd.py: /home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg
 /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_PWM_Cmd.py: /opt/ros/melodic/share/std_msgs/msg/Header.msg
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating Python from MSG esp32_interface/PWM_Cmd"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating Python from MSG esp32_interface/PWM_Cmd"
 	cd /home/andy/catkin_ws/build/esp32_interface && ../catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/genpy/cmake/../../../lib/genpy/genmsg_py.py /home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg -Iesp32_interface:/home/andy/catkin_ws/src/esp32_interface/msg -Istd_msgs:/opt/ros/melodic/share/std_msgs/cmake/../msg -p esp32_interface -o /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg
 
 /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_Car_Control.py: /opt/ros/melodic/lib/genpy/genmsg_py.py
 /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_Car_Control.py: /home/andy/catkin_ws/src/esp32_interface/msg/Car_Control.msg
 /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_Car_Control.py: /opt/ros/melodic/share/std_msgs/msg/Header.msg
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating Python from MSG esp32_interface/Car_Control"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Generating Python from MSG esp32_interface/Car_Control"
 	cd /home/andy/catkin_ws/build/esp32_interface && ../catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/genpy/cmake/../../../lib/genpy/genmsg_py.py /home/andy/catkin_ws/src/esp32_interface/msg/Car_Control.msg -Iesp32_interface:/home/andy/catkin_ws/src/esp32_interface/msg -Istd_msgs:/opt/ros/melodic/share/std_msgs/cmake/../msg -p esp32_interface -o /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg
 
 /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_PWM_Measure.py: /opt/ros/melodic/lib/genpy/genmsg_py.py
 /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_PWM_Measure.py: /home/andy/catkin_ws/src/esp32_interface/msg/PWM_Measure.msg
 /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_PWM_Measure.py: /opt/ros/melodic/share/std_msgs/msg/Header.msg
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Generating Python from MSG esp32_interface/PWM_Measure"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Generating Python from MSG esp32_interface/PWM_Measure"
 	cd /home/andy/catkin_ws/build/esp32_interface && ../catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/genpy/cmake/../../../lib/genpy/genmsg_py.py /home/andy/catkin_ws/src/esp32_interface/msg/PWM_Measure.msg -Iesp32_interface:/home/andy/catkin_ws/src/esp32_interface/msg -Istd_msgs:/opt/ros/melodic/share/std_msgs/cmake/../msg -p esp32_interface -o /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg
 
 /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/__init__.py: /opt/ros/melodic/lib/genpy/genmsg_py.py
+/home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/__init__.py: /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_Driveshaft_Encoder.py
 /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/__init__.py: /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_PWM_Cmd.py
 /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/__init__.py: /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_Car_Control.py
 /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/__init__.py: /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_PWM_Measure.py
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Generating Python msg __init__.py for esp32_interface"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Generating Python msg __init__.py for esp32_interface"
 	cd /home/andy/catkin_ws/build/esp32_interface && ../catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/genpy/cmake/../../../lib/genpy/genmsg_py.py -o /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg --initpy
 
 esp32_interface_generate_messages_py: esp32_interface/CMakeFiles/esp32_interface_generate_messages_py
+esp32_interface_generate_messages_py: /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_Driveshaft_Encoder.py
 esp32_interface_generate_messages_py: /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_PWM_Cmd.py
 esp32_interface_generate_messages_py: /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_Car_Control.py
 esp32_interface_generate_messages_py: /home/andy/catkin_ws/devel/lib/python2.7/dist-packages/esp32_interface/msg/_PWM_Measure.py

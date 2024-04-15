@@ -1,6 +1,6 @@
 # generated from genmsg/cmake/pkg-genmsg.context.in
 
-messages_str = "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg;/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Measure.msg;/home/andy/catkin_ws/src/esp32_interface/msg/Car_Control.msg"
+messages_str = "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg;/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Measure.msg;/home/andy/catkin_ws/src/esp32_interface/msg/Car_Control.msg;/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg"
 services_str = ""
 pkg_name = "esp32_interface"
 dependencies_str = "std_msgs"

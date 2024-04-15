@@ -53,33 +53,42 @@ CMAKE_BINARY_DIR = /home/andy/catkin_ws/build
 # Include the progress variables for this target.
 include esp32_interface/CMakeFiles/esp32_interface_generate_messages_cpp.dir/progress.make
 
+esp32_interface/CMakeFiles/esp32_interface_generate_messages_cpp: /home/andy/catkin_ws/devel/include/esp32_interface/Driveshaft_Encoder.h
 esp32_interface/CMakeFiles/esp32_interface_generate_messages_cpp: /home/andy/catkin_ws/devel/include/esp32_interface/PWM_Cmd.h
 esp32_interface/CMakeFiles/esp32_interface_generate_messages_cpp: /home/andy/catkin_ws/devel/include/esp32_interface/Car_Control.h
 esp32_interface/CMakeFiles/esp32_interface_generate_messages_cpp: /home/andy/catkin_ws/devel/include/esp32_interface/PWM_Measure.h
 
 
+/home/andy/catkin_ws/devel/include/esp32_interface/Driveshaft_Encoder.h: /opt/ros/melodic/lib/gencpp/gen_cpp.py
+/home/andy/catkin_ws/devel/include/esp32_interface/Driveshaft_Encoder.h: /home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg
+/home/andy/catkin_ws/devel/include/esp32_interface/Driveshaft_Encoder.h: /opt/ros/melodic/share/std_msgs/msg/Header.msg
+/home/andy/catkin_ws/devel/include/esp32_interface/Driveshaft_Encoder.h: /opt/ros/melodic/share/gencpp/msg.h.template
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating C++ code from esp32_interface/Driveshaft_Encoder.msg"
+	cd /home/andy/catkin_ws/src/esp32_interface && /home/andy/catkin_ws/build/catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/gencpp/cmake/../../../lib/gencpp/gen_cpp.py /home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg -Iesp32_interface:/home/andy/catkin_ws/src/esp32_interface/msg -Istd_msgs:/opt/ros/melodic/share/std_msgs/cmake/../msg -p esp32_interface -o /home/andy/catkin_ws/devel/include/esp32_interface -e /opt/ros/melodic/share/gencpp/cmake/..
+
 /home/andy/catkin_ws/devel/include/esp32_interface/PWM_Cmd.h: /opt/ros/melodic/lib/gencpp/gen_cpp.py
 /home/andy/catkin_ws/devel/include/esp32_interface/PWM_Cmd.h: /home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg
 /home/andy/catkin_ws/devel/include/esp32_interface/PWM_Cmd.h: /opt/ros/melodic/share/std_msgs/msg/Header.msg
 /home/andy/catkin_ws/devel/include/esp32_interface/PWM_Cmd.h: /opt/ros/melodic/share/gencpp/msg.h.template
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_1) "Generating C++ code from esp32_interface/PWM_Cmd.msg"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating C++ code from esp32_interface/PWM_Cmd.msg"
 	cd /home/andy/catkin_ws/src/esp32_interface && /home/andy/catkin_ws/build/catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/gencpp/cmake/../../../lib/gencpp/gen_cpp.py /home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg -Iesp32_interface:/home/andy/catkin_ws/src/esp32_interface/msg -Istd_msgs:/opt/ros/melodic/share/std_msgs/cmake/../msg -p esp32_interface -o /home/andy/catkin_ws/devel/include/esp32_interface -e /opt/ros/melodic/share/gencpp/cmake/..
 
 /home/andy/catkin_ws/devel/include/esp32_interface/Car_Control.h: /opt/ros/melodic/lib/gencpp/gen_cpp.py
 /home/andy/catkin_ws/devel/include/esp32_interface/Car_Control.h: /home/andy/catkin_ws/src/esp32_interface/msg/Car_Control.msg
 /home/andy/catkin_ws/devel/include/esp32_interface/Car_Control.h: /opt/ros/melodic/share/std_msgs/msg/Header.msg
 /home/andy/catkin_ws/devel/include/esp32_interface/Car_Control.h: /opt/ros/melodic/share/gencpp/msg.h.template
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_2) "Generating C++ code from esp32_interface/Car_Control.msg"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Generating C++ code from esp32_interface/Car_Control.msg"
 	cd /home/andy/catkin_ws/src/esp32_interface && /home/andy/catkin_ws/build/catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/gencpp/cmake/../../../lib/gencpp/gen_cpp.py /home/andy/catkin_ws/src/esp32_interface/msg/Car_Control.msg -Iesp32_interface:/home/andy/catkin_ws/src/esp32_interface/msg -Istd_msgs:/opt/ros/melodic/share/std_msgs/cmake/../msg -p esp32_interface -o /home/andy/catkin_ws/devel/include/esp32_interface -e /opt/ros/melodic/share/gencpp/cmake/..
 
 /home/andy/catkin_ws/devel/include/esp32_interface/PWM_Measure.h: /opt/ros/melodic/lib/gencpp/gen_cpp.py
 /home/andy/catkin_ws/devel/include/esp32_interface/PWM_Measure.h: /home/andy/catkin_ws/src/esp32_interface/msg/PWM_Measure.msg
 /home/andy/catkin_ws/devel/include/esp32_interface/PWM_Measure.h: /opt/ros/melodic/share/std_msgs/msg/Header.msg
 /home/andy/catkin_ws/devel/include/esp32_interface/PWM_Measure.h: /opt/ros/melodic/share/gencpp/msg.h.template
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_3) "Generating C++ code from esp32_interface/PWM_Measure.msg"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --blue --bold --progress-dir=/home/andy/catkin_ws/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_4) "Generating C++ code from esp32_interface/PWM_Measure.msg"
 	cd /home/andy/catkin_ws/src/esp32_interface && /home/andy/catkin_ws/build/catkin_generated/env_cached.sh /usr/bin/python2 /opt/ros/melodic/share/gencpp/cmake/../../../lib/gencpp/gen_cpp.py /home/andy/catkin_ws/src/esp32_interface/msg/PWM_Measure.msg -Iesp32_interface:/home/andy/catkin_ws/src/esp32_interface/msg -Istd_msgs:/opt/ros/melodic/share/std_msgs/cmake/../msg -p esp32_interface -o /home/andy/catkin_ws/devel/include/esp32_interface -e /opt/ros/melodic/share/gencpp/cmake/..
 
 esp32_interface_generate_messages_cpp: esp32_interface/CMakeFiles/esp32_interface_generate_messages_cpp
+esp32_interface_generate_messages_cpp: /home/andy/catkin_ws/devel/include/esp32_interface/Driveshaft_Encoder.h
 esp32_interface_generate_messages_cpp: /home/andy/catkin_ws/devel/include/esp32_interface/PWM_Cmd.h
 esp32_interface_generate_messages_cpp: /home/andy/catkin_ws/devel/include/esp32_interface/Car_Control.h
 esp32_interface_generate_messages_cpp: /home/andy/catkin_ws/devel/include/esp32_interface/PWM_Measure.h

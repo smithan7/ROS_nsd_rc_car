@@ -53,6 +53,7 @@ add_message_files(
   PWM_Cmd.msg
   PWM_Measure.msg
   Car_Control.msg
+  Driveshaft_Encoder.msg
 )
 
 ## Generate services in the 'srv' folder

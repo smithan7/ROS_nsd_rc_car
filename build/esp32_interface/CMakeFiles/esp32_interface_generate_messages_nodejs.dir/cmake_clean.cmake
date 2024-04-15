@@ -1,5 +1,6 @@
 file(REMOVE_RECURSE
   "CMakeFiles/esp32_interface_generate_messages_nodejs"
+  "/home/andy/catkin_ws/devel/share/gennodejs/ros/esp32_interface/msg/Driveshaft_Encoder.js"
   "/home/andy/catkin_ws/devel/share/gennodejs/ros/esp32_interface/msg/PWM_Cmd.js"
   "/home/andy/catkin_ws/devel/share/gennodejs/ros/esp32_interface/msg/Car_Control.js"
   "/home/andy/catkin_ws/devel/share/gennodejs/ros/esp32_interface/msg/PWM_Measure.js"

@@ -1,2 +1,2 @@
-car_simulator:esp32_interface:ins_interface:param_launcher:simple_controller:stanley_controller
+car_simulator:esp32_interface:ins_interface:param_launcher:simple_controller:stanley_controller:state_estimator:user_interface
 -DCATKIN_DEVEL_PREFIX=/home/andy/catkin_ws/devel -DCMAKE_INSTALL_PREFIX=/home/andy/catkin_ws/install -G Unix Makefiles

@@ -42,6 +42,7 @@ if("x${CMAKE_INSTALL_COMPONENT}x" STREQUAL "xUnspecifiedx" OR NOT CMAKE_INSTALL_
     "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg"
     "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Measure.msg"
     "/home/andy/catkin_ws/src/esp32_interface/msg/Car_Control.msg"
+    "/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg"
     )
 endif()
 

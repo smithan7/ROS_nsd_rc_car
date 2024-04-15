@@ -1,6 +1,6 @@
 # generated from genmsg/cmake/pkg-genmsg.cmake.em
 
-message(STATUS "esp32_interface: 3 messages, 0 services")
+message(STATUS "esp32_interface: 4 messages, 0 services")
 
 set(MSG_I_FLAGS "-Iesp32_interface:/home/andy/catkin_ws/src/esp32_interface/msg;-Istd_msgs:/opt/ros/melodic/share/std_msgs/cmake/../msg")
 
@@ -16,6 +16,11 @@ add_custom_target(esp32_interface_generate_messages ALL)
 # verify that message/service dependencies have not changed since configure
 
 
+
+get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg" NAME_WE)
+add_custom_target(_esp32_interface_generate_messages_check_deps_${_filename}
+  COMMAND ${CATKIN_ENV} ${PYTHON_EXECUTABLE} ${GENMSG_CHECK_DEPS_SCRIPT} "esp32_interface" "/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg" "std_msgs/Header"
+)
 
 get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg" NAME_WE)
 add_custom_target(_esp32_interface_generate_messages_check_deps_${_filename}
@@ -38,6 +43,12 @@ add_custom_target(_esp32_interface_generate_messages_check_deps_${_filename}
 
 ### Section generating for lang: gencpp
 ### Generating Messages
+_generate_msg_cpp(esp32_interface
+  "/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg"
+  "${MSG_I_FLAGS}"
+  "/opt/ros/melodic/share/std_msgs/cmake/../msg/Header.msg"
+  ${CATKIN_DEVEL_PREFIX}/${gencpp_INSTALL_DIR}/esp32_interface
+)
 _generate_msg_cpp(esp32_interface
   "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg"
   "${MSG_I_FLAGS}"
@@ -71,6 +82,8 @@ add_custom_target(esp32_interface_generate_messages_cpp
 add_dependencies(esp32_interface_generate_messages esp32_interface_generate_messages_cpp)
 
 # add dependencies to all check dependencies targets
+get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg" NAME_WE)
+add_dependencies(esp32_interface_generate_messages_cpp _esp32_interface_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg" NAME_WE)
 add_dependencies(esp32_interface_generate_messages_cpp _esp32_interface_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/Car_Control.msg" NAME_WE)
@@ -87,6 +100,12 @@ list(APPEND ${PROJECT_NAME}_EXPORTED_TARGETS esp32_interface_generate_messages_c
 
 ### Section generating for lang: geneus
 ### Generating Messages
+_generate_msg_eus(esp32_interface
+  "/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg"
+  "${MSG_I_FLAGS}"
+  "/opt/ros/melodic/share/std_msgs/cmake/../msg/Header.msg"
+  ${CATKIN_DEVEL_PREFIX}/${geneus_INSTALL_DIR}/esp32_interface
+)
 _generate_msg_eus(esp32_interface
   "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg"
   "${MSG_I_FLAGS}"
@@ -120,6 +139,8 @@ add_custom_target(esp32_interface_generate_messages_eus
 add_dependencies(esp32_interface_generate_messages esp32_interface_generate_messages_eus)
 
 # add dependencies to all check dependencies targets
+get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg" NAME_WE)
+add_dependencies(esp32_interface_generate_messages_eus _esp32_interface_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg" NAME_WE)
 add_dependencies(esp32_interface_generate_messages_eus _esp32_interface_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/Car_Control.msg" NAME_WE)
@@ -136,6 +157,12 @@ list(APPEND ${PROJECT_NAME}_EXPORTED_TARGETS esp32_interface_generate_messages_e
 
 ### Section generating for lang: genlisp
 ### Generating Messages
+_generate_msg_lisp(esp32_interface
+  "/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg"
+  "${MSG_I_FLAGS}"
+  "/opt/ros/melodic/share/std_msgs/cmake/../msg/Header.msg"
+  ${CATKIN_DEVEL_PREFIX}/${genlisp_INSTALL_DIR}/esp32_interface
+)
 _generate_msg_lisp(esp32_interface
   "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg"
   "${MSG_I_FLAGS}"
@@ -169,6 +196,8 @@ add_custom_target(esp32_interface_generate_messages_lisp
 add_dependencies(esp32_interface_generate_messages esp32_interface_generate_messages_lisp)
 
 # add dependencies to all check dependencies targets
+get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg" NAME_WE)
+add_dependencies(esp32_interface_generate_messages_lisp _esp32_interface_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg" NAME_WE)
 add_dependencies(esp32_interface_generate_messages_lisp _esp32_interface_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/Car_Control.msg" NAME_WE)
@@ -185,6 +214,12 @@ list(APPEND ${PROJECT_NAME}_EXPORTED_TARGETS esp32_interface_generate_messages_l
 
 ### Section generating for lang: gennodejs
 ### Generating Messages
+_generate_msg_nodejs(esp32_interface
+  "/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg"
+  "${MSG_I_FLAGS}"
+  "/opt/ros/melodic/share/std_msgs/cmake/../msg/Header.msg"
+  ${CATKIN_DEVEL_PREFIX}/${gennodejs_INSTALL_DIR}/esp32_interface
+)
 _generate_msg_nodejs(esp32_interface
   "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg"
   "${MSG_I_FLAGS}"
@@ -218,6 +253,8 @@ add_custom_target(esp32_interface_generate_messages_nodejs
 add_dependencies(esp32_interface_generate_messages esp32_interface_generate_messages_nodejs)
 
 # add dependencies to all check dependencies targets
+get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg" NAME_WE)
+add_dependencies(esp32_interface_generate_messages_nodejs _esp32_interface_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg" NAME_WE)
 add_dependencies(esp32_interface_generate_messages_nodejs _esp32_interface_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/Car_Control.msg" NAME_WE)
@@ -234,6 +271,12 @@ list(APPEND ${PROJECT_NAME}_EXPORTED_TARGETS esp32_interface_generate_messages_n
 
 ### Section generating for lang: genpy
 ### Generating Messages
+_generate_msg_py(esp32_interface
+  "/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg"
+  "${MSG_I_FLAGS}"
+  "/opt/ros/melodic/share/std_msgs/cmake/../msg/Header.msg"
+  ${CATKIN_DEVEL_PREFIX}/${genpy_INSTALL_DIR}/esp32_interface
+)
 _generate_msg_py(esp32_interface
   "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg"
   "${MSG_I_FLAGS}"
@@ -267,6 +310,8 @@ add_custom_target(esp32_interface_generate_messages_py
 add_dependencies(esp32_interface_generate_messages esp32_interface_generate_messages_py)
 
 # add dependencies to all check dependencies targets
+get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/Driveshaft_Encoder.msg" NAME_WE)
+add_dependencies(esp32_interface_generate_messages_py _esp32_interface_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/PWM_Cmd.msg" NAME_WE)
 add_dependencies(esp32_interface_generate_messages_py _esp32_interface_generate_messages_check_deps_${_filename})
 get_filename_component(_filename "/home/andy/catkin_ws/src/esp32_interface/msg/Car_Control.msg" NAME_WE)

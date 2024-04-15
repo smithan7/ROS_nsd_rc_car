@@ -3,6 +3,6 @@ prefix=/home/andy/catkin_ws/devel
 Name: ins_interface
 Description: Description of ins_interface
 Version: 0.0.0
-Cflags: 
+Cflags: -I/home/andy/catkin_ws/devel/include
 Libs: -L${prefix}/lib 
 Requires: 
