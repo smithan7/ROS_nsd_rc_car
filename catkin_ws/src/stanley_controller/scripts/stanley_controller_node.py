@@ -54,11 +54,11 @@ class Stanley_Controller:
         self.controller.speed_pid.kp = 2.0
         # controller.speed_pid.ki = 0.01
         # tune the steering controller
-        self.controller.steer_pid.kp = 8.0
-        self.controller.steer_pid.kd = 500.0
+        self.controller.steer_pid.kp = 4.0
+        self.controller.steer_pid.kd = 50.0
         # cross track component
-        self.cross_track_error_gain = 3.0
-        self.cross_track_error_soft = 1.0
+        self.cross_track_error_gain = 5.0
+        self.cross_track_error_soft = 0.5
 
         # set values for the track interface
         self.nearest_edge = 0
@@ -97,13 +97,11 @@ class Stanley_Controller:
             marker.pose.orientation.w = 1.0
             marker.pose.position.x = row["outer_x"]
             marker.pose.position.y = row["outer_y"]
-            marker.pose.position.z = 0.0
-
+            marker.pose.position.z = 1.5
             self.track_markers.markers.append(marker)
 
 
             marker = Marker()
-
             marker.id = index + len(self.track.track_df)
             marker.header.stamp = rospy.get_rostime()
             marker.header.frame_id = "/odom"
@@ -115,10 +113,53 @@ class Stanley_Controller:
             marker.pose.orientation.w = 1.0
             marker.pose.position.x = row["inner_x"]
             marker.pose.position.y = row["inner_y"]
-            marker.pose.position.z = 0.0
-
+            marker.pose.position.z = 1.5
             self.track_markers.markers.append(marker)
 
+            marker = Marker()
+            marker.id = index + 2*len(self.track.track_df)
+            marker.header.stamp = rospy.get_rostime()
+            marker.header.frame_id = "/odom"
+            marker.type = marker.SPHERE
+            marker.action = marker.ADD
+            marker.scale = Vector3(1.0, 1.0, 0.1)
+            marker.color.g = 1.0
+            marker.color.a = 1.0
+            marker.pose.orientation.w = 1.0
+            marker.pose.position.x = row["x"]
+            marker.pose.position.y = row["y"]
+            marker.pose.position.z = 0.1
+            self.track_markers.markers.append(marker)
+
+        marker = Marker()
+        marker.id = 3*len(self.track.track_df)
+        marker.header.stamp = rospy.get_rostime()
+        marker.header.frame_id = "/odom"
+        marker.type = marker.SPHERE
+        marker.action = marker.ADD
+        marker.scale = Vector3(1.0, 1.0, 10.0)
+        marker.color.b = 1.0
+        marker.color.a = 1.0
+        marker.pose.orientation.w = 1.0
+        marker.pose.position.x = self.track.track_df["inner_x"].iloc[0]
+        marker.pose.position.y = self.track.track_df["inner_y"].iloc[0]
+        marker.pose.position.z = 5.0
+        self.track_markers.markers.append(marker)
+
+        marker = Marker()
+        marker.id = 3*len(self.track.track_df) + 1
+        marker.header.stamp = rospy.get_rostime()
+        marker.header.frame_id = "/odom"
+        marker.type = marker.SPHERE
+        marker.action = marker.ADD
+        marker.scale = Vector3(1.0, 1.0, 10.0)
+        marker.color.b = 1.0
+        marker.color.a = 1.0
+        marker.pose.orientation.w = 1.0
+        marker.pose.position.x = self.track.track_df["outer_x"].iloc[0]
+        marker.pose.position.y = self.track.track_df["outer_y"].iloc[0]
+        marker.pose.position.z = 5.0
+        self.track_markers.markers.append(marker)
 
         self.marker_pub.publish(self.track_markers)
 
@@ -141,7 +182,10 @@ class Stanley_Controller:
         '''
         
         self.nearest_edge, cross_track_error, dist_along_edge = self.track.find_nearest_edge_with_seed([self.car_x, self.car_y], self.nearest_edge, window_size=2)
-        desired_speed = self.track.track_df['speed'][self.nearest_edge] * 0.5
+        if self.nearest_edge >= 204:
+            print("Lap Complete")
+            self.nearest_edge = 0
+        desired_speed = self.track.track_df['speed'][self.nearest_edge]
         # print("Stanley_Controllet::desired speed: ", desired_speed)
         a_des = self.controller.speed_pid.tic(self.car_speed, desired_speed)
         # print("Stanley_Controllet::desired acceleration: ", a_des)
@@ -163,6 +207,10 @@ class Stanley_Controller:
         # add the desired steering angle based on heading error and cross track error
         steer_input = steer_des + cross_track_error_correction
         # print("Stanley_Controllet::desired steering: ", steer_input)
+
+        # if cross_track_error > 2.0:
+        #     desired_speed *= 0.8
+
         # Prep PWM_Cmd and send
         msg = Car_Control()
         msg.header.stamp = rospy.Time.now()

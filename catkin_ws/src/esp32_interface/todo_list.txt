@@ -1,29 +1,33 @@
 NowDos
 
 Architectural Todos
-- Decide if I should switch to Python3?
-    - Seems pretty straight forward
-    - Python 2 is no longer supported...
-    - https://gist.github.com/azidanit/9950aa5408acdbe25f0ec431654da8d6
 - Stanley controller node
+    - setup so that the edge finder and desired speed / heading updates at ~20 Hz but the speed and steering controller run at 100 Hz
+        - or, tune the controller to 20 Hz
     - output should be desired speed and PWM - output both!
         - would be nice to have it only output one but you need current speed to set the PWM
         - car simulator takes in desired speed
         - EPS32 takes in PWM
-        - plot the path
-- keyboard controller node
-    - control the car and take over RC control
+        - plot the path as Lines
+             - inner and outer edges + center lines
+    - at edge 92 of the track it does a circle - is this angle roll over?
 - state estimation node
+    - build it
 - pull optimized track from file
     - work with britton to identify preferred format
 - PWM -> acceleration estimator (can be offline)
+- Build a health status node that checks for errors of all other nodes and sends out to the UI and/or stops the car
 
 
 Big Todos
+- UI Noide
+    - Update to take in step functions from the UI and send to the ESP32
+    - when publishing the "time" of the UI command I am not sure what goes there... field likely not needed because I have header.stamp
 - Stanley controller node
     - pull controller input from params
-- get the aceinna ins working!
+    - tune the steering controller to 20 Hz
 - ESP32_Interface
+    - Rename topics in and out so they make more sense
     - Make this auto-calibrate so that it knows the mean PWM values and range
 - Plot path to rviz using marker arrays
     - show centerline and edges
@@ -32,6 +36,7 @@ Big Todos
     - launch RVIZ from launch file with config file
 
 Convenient Todos
+- get the aceinna ins working!
 - car_simulator/car_simulator_node
     - convert between PWM and car car_simulator input values in a better way
         - Right now I linearly interpolate PWM between 1000 to 2000 PW and car state expects -9.81 to 3.3 m/s^2
@@ -42,6 +47,15 @@ Convenient Todos
 Completed Todos:
 - General
     - ROS python cannot find Pandas
+    - Decide if I should switch to Python3?
+        - It is very simple to do node by node
+        - need to add the Python3 shebang - #!/usr/bin/python3
+        - https://gist.github.com/azidanit/9950aa5408acdbe25f0ec431654da8d6
+    - keyboard controller node -> not complete just not important
+        - control the car and take over RC control
+- INS_Interface
+    - Publish NavSatFix msg
+    - Publish Odom msg
 - car_simulator/car_simulator_node
     - setup param files to read in the car's description and location (for generating gnss lat/lon)
     - verify the car will move with some inputs
@@ -58,6 +72,10 @@ Completed Todos:
         - test steering controller works
         - test combined controller works
         - test it follows tracks
+    - plot the path
+        - did it as spheres - should make lines
+
+
 - General
     - launch file to launch everything
         - multiple nodes and the param files

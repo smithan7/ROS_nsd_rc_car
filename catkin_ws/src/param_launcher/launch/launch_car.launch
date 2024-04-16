@@ -1,0 +1,6 @@
+<launch>
+    <node pkg="esp32_interface" name="esp32_interface" type="esp32_node.py" output="screen"/>
+    <node pkg="ins_interface" name="ins_interface" type="open_ins_node.py" output="screen"/>
+    <node pkg="ui_interface" name="ui_interface" type="ui_node.py" output="screen"/>
+</launch>
+
