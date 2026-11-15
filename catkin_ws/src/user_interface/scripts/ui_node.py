@@ -65,7 +65,7 @@ class UserInterface:
 
         rospy.Timer(rospy.Duration(1.0/15.0), self.transmit_data)
         rospy.Timer(rospy.Duration(1.0/20.0), self.recv_data)
-        rospy.Timer(rospy.Duration(1.0/20.0), self.publish_user_pwm_commands)        
+        rospy.Timer(rospy.Duration(1.0/50.0), self.publish_user_pwm_commands)  # 50 Hz: ESP32 times out after 200 ms        
         
 
 

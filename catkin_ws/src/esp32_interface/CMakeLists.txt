@@ -54,6 +54,8 @@ add_message_files(
   PWM_Measure.msg
   Car_Control.msg
   Driveshaft_Encoder.msg
+  ESP32_Status.msg
+  ESP32_Ack.msg
 )
 
 ## Generate services in the 'srv' folder
@@ -164,6 +166,9 @@ include_directories(
 ## in contrast to setup.py, you can choose the destination
 catkin_install_python(PROGRAMS
   scripts/esp32_node.py
+  DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+install(FILES scripts/esp32_protocol.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
