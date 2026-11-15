@@ -15,7 +15,7 @@ Subscribes
   ui_commands (PWM_Cmd): steer / speed in microseconds; publish at >= 5 Hz (50 Hz intended)
 Params
   ~port (default: first Silicon Labs USB-serial device), ~baud (default 460800),
-  ~encoder_edges_per_rev (reflective segments on the driveshaft disc; default 1 - measure it)
+  ~encoder_edges_per_rev (default 2: disc with 2 blocked + 2 open quarter segments)
 """
 
 from __future__ import print_function
@@ -41,10 +41,9 @@ class ESP32Interface(object):
     def __init__(self):
         self.port_param = rospy.get_param("~port", "")
         self.baud = int(rospy.get_param("~baud", P.BAUD))
-        # reflective segments on the driveshaft disc (rising edges per rev) - measure it
-        self.edges_per_rev = int(rospy.get_param("~encoder_edges_per_rev", 1))
-        if not rospy.has_param("~encoder_edges_per_rev"):
-            rospy.logwarn("esp32_node: ~encoder_edges_per_rev not set, assuming 1 - rpm is wrong if the disc has more segments")
+        # driveshaft disc: 4 quarter segments, 2 blocked + 2 open -> 2 rising edges per rev
+        self.edges_per_rev = int(rospy.get_param("~encoder_edges_per_rev", 2))
+        rospy.loginfo("esp32_node: encoder %d rising edges per driveshaft rev", self.edges_per_rev)
         self.ser = self._open()
 
         self.lock = threading.Lock()  # serial writes + latency tracker
