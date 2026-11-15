@@ -15,7 +15,8 @@ Subscribes
   ui_commands (PWM_Cmd): steer / speed in microseconds; publish at >= 5 Hz (50 Hz intended)
 Params
   ~port (default: first Silicon Labs USB-serial device), ~baud (default 460800),
-  ~encoder_edges_per_rev (default 2: disc with 2 blocked + 2 open quarter segments)
+  ~encoder_edges_per_rev (default 2: disc with 2 blocked + 2 open quarter segments),
+  ~diff_ratio (default 2.8 driveshaft revs per wheel rev), ~wheel_diameter_m (default 0.100)
 """
 
 from __future__ import print_function
@@ -41,9 +42,13 @@ class ESP32Interface(object):
     def __init__(self):
         self.port_param = rospy.get_param("~port", "")
         self.baud = int(rospy.get_param("~baud", P.BAUD))
-        # driveshaft disc: 4 quarter segments, 2 blocked + 2 open -> 2 rising edges per rev
-        self.edges_per_rev = int(rospy.get_param("~encoder_edges_per_rev", 2))
-        rospy.loginfo("esp32_node: encoder %d rising edges per driveshaft rev", self.edges_per_rev)
+        # drivetrain: seeds in esp32_protocol (Infraction 6S BLX); override as calibration improves
+        self.edges_per_rev = int(rospy.get_param("~encoder_edges_per_rev", P.ENCODER_EDGES_PER_REV))
+        self.diff_ratio = float(rospy.get_param("~diff_ratio", P.DIFF_RATIO))
+        self.wheel_diameter_m = float(rospy.get_param("~wheel_diameter_m", P.WHEEL_DIAMETER_M))
+        rospy.loginfo("esp32_node: encoder %d edges/rev, diff %.3f:1, wheel %.4f m -> %.4f m per edge",
+                      self.edges_per_rev, self.diff_ratio, self.wheel_diameter_m,
+                      P.meters_per_edge(self.edges_per_rev, self.diff_ratio, self.wheel_diameter_m))
         self.ser = self._open()
 
         self.lock = threading.Lock()  # serial writes + latency tracker
@@ -163,6 +168,7 @@ class ESP32Interface(object):
                   "enc_last_edge_us", "enc_dt_us", "bad_cmds"):
             setattr(m, k, d[k])
         m.driveshaft_rpm = rpm
+        m.wheel_speed_mps = P.wheel_speed_mps(rpm, self.diff_ratio, self.wheel_diameter_m)
         self.status_pub.publish(m)
 
         if d["mode"] != self.last_mode:

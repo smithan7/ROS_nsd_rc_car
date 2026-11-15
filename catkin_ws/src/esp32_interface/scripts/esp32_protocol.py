@@ -11,11 +11,21 @@ smithan7/not-so-dumb-rc-car AutonomousCar/code/esp32_autopilot_interface/.
 from __future__ import division
 
 import collections
+import math
 
 BAUD = 460800
 SEQ_MOD = 1000000
 PULSE_MIN_US, PULSE_MAX_US = 900, 2100
 MICROS_WRAP = 2 ** 32
+
+# ---- drivetrain seed values: Arrma Infraction 6S BLX (published specs) -------------------
+# Encoder disc is on the rear driveshaft: after the spur/center diff, before the rear diff.
+# Refine over time: the tooth-count ratio is exact; the effective rolling diameter drifts
+# (wear, load, tyre growth at speed) - recalibrate it with calibrate_wheel_diameter().
+DIFF_RATIO = 2.8           # driveshaft revs per wheel rev (ARRMA "internal gear ratio" 2.8:1;
+                           # final drive 8.58:1 with the stock 15T pinion / 46T spur)
+WHEEL_DIAMETER_M = 0.100   # stock tyre, 3.94 in
+ENCODER_EDGES_PER_REV = 2  # disc: 4 quarters, 2 blocked + 2 open -> 2 rising edges per rev
 
 MODE_MANUAL = 0
 MODE_AUTO = 1
@@ -111,3 +121,23 @@ class LatencyTracker(object):
     def acked(self, seq, t_received):
         t_sent = self.pending.pop(seq % SEQ_MOD, None)
         return None if t_sent is None else t_received - t_sent
+
+
+def wheel_speed_mps(driveshaft_rpm_value, diff_ratio=DIFF_RATIO, wheel_diameter_m=WHEEL_DIAMETER_M):
+    """Ground speed (m/s) from rear driveshaft rpm, assuming no wheel slip. The rear diff
+    averages the two rear wheels, and wheelspin reads high."""
+    return driveshaft_rpm_value / 60.0 / diff_ratio * math.pi * wheel_diameter_m
+
+
+def meters_per_edge(edges_per_rev=ENCODER_EDGES_PER_REV, diff_ratio=DIFF_RATIO, wheel_diameter_m=WHEEL_DIAMETER_M):
+    """Distance travelled per encoder rising edge (~5.6 cm with the seed values)."""
+    return math.pi * wheel_diameter_m / (diff_ratio * edges_per_rev)
+
+
+def calibrate_wheel_diameter(edges, distance_m, edges_per_rev=ENCODER_EDGES_PER_REV, diff_ratio=DIFF_RATIO):
+    """Effective rolling diameter from a measured roll: push (or drive slowly, no wheelspin) the
+    car a taped-out distance in a straight line and count encoder edges (enc_count difference)."""
+    if edges <= 0 or distance_m <= 0:
+        raise ValueError("need a positive edge count and distance")
+    wheel_revs = edges / float(edges_per_rev) / diff_ratio
+    return distance_m / wheel_revs / math.pi

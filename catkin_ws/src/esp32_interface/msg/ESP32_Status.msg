@@ -19,3 +19,4 @@ uint32 enc_last_edge_us
 uint32 enc_dt_us
 uint32 bad_cmds
 float32 driveshaft_rpm     # from the encoder fields and ~encoder_edges_per_rev; decays to 0 when stopped
+float32 wheel_speed_mps    # driveshaft_rpm / ~diff_ratio * pi * ~wheel_diameter_m (no-slip; reads high on wheelspin)

@@ -1,5 +1,6 @@
 """Tests for esp32_protocol (no ROS needed):  python3 -m pytest test_esp32_protocol.py"""
 
+import math
 import os
 import sys
 
@@ -93,6 +94,31 @@ def test_rpm_from_counts_averages_over_uneven_segments():
     assert P.rpm_from_counts(100, 1000000, 100, 1050000, edges_per_rev=2) == 0.0
     assert P.rpm_from_counts(2 ** 32 - 2, 2 ** 32 - 25000, 2, 25000, edges_per_rev=1) == pytest.approx(4 / 0.05 * 60)
     assert P.rpm_from_counts(100, 1000000, 108, 1000000, edges_per_rev=2) == 0.0  # no time elapsed
+
+
+def test_seed_drivetrain_constants():
+    # Infraction 6S BLX: 2.8:1 diff ("internal gear ratio"), 100 mm tyres, disc 2 blocked + 2 open
+    assert P.DIFF_RATIO == 2.8
+    assert P.WHEEL_DIAMETER_M == 0.100
+    assert P.ENCODER_EDGES_PER_REV == 2
+    assert P.meters_per_edge() == pytest.approx(math.pi * 0.100 / (2.8 * 2))  # ~5.6 cm
+
+
+def test_wheel_speed_from_driveshaft_rpm():
+    # 2800 driveshaft rpm = 1000 wheel rpm = 1000 * pi * 0.1 m / 60 s
+    assert P.wheel_speed_mps(2800.0) == pytest.approx(1000 * math.pi * 0.1 / 60)
+    assert P.wheel_speed_mps(2800.0, diff_ratio=2.0, wheel_diameter_m=0.2) == pytest.approx(1400 * math.pi * 0.2 / 60)
+    assert P.wheel_speed_mps(0.0) == 0.0
+
+
+def test_calibrate_wheel_diameter_from_a_measured_roll():
+    # roll a known distance and count edges; the tooth-count ratio is exact, the effective
+    # rolling diameter is what drifts (wear, load, tyre growth)
+    d = P.calibrate_wheel_diameter(edges=200, distance_m=10.0)
+    assert d == pytest.approx(10.0 / (200 / 2 / 2.8) / math.pi)  # 200 edges = 100 shaft revs = 35.7 wheel revs
+    assert P.meters_per_edge(wheel_diameter_m=d) * 200 == pytest.approx(10.0)
+    with pytest.raises(ValueError):
+        P.calibrate_wheel_diameter(edges=0, distance_m=10.0)
 
 
 def test_driveshaft_rpm_micros_wraparound():
