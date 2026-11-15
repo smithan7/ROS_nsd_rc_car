@@ -14,7 +14,8 @@ Publishes
 Subscribes
   ui_commands (PWM_Cmd): steer / speed in microseconds; publish at >= 5 Hz (50 Hz intended)
 Params
-  ~port (default: first Silicon Labs USB-serial device), ~baud (default 460800)
+  ~port (default: first Silicon Labs USB-serial device), ~baud (default 460800),
+  ~encoder_edges_per_rev (reflective segments on the driveshaft disc; default 1 - measure it)
 """
 
 from __future__ import print_function
@@ -40,6 +41,10 @@ class ESP32Interface(object):
     def __init__(self):
         self.port_param = rospy.get_param("~port", "")
         self.baud = int(rospy.get_param("~baud", P.BAUD))
+        # reflective segments on the driveshaft disc (rising edges per rev) - measure it
+        self.edges_per_rev = int(rospy.get_param("~encoder_edges_per_rev", 1))
+        if not rospy.has_param("~encoder_edges_per_rev"):
+            rospy.logwarn("esp32_node: ~encoder_edges_per_rev not set, assuming 1 - rpm is wrong if the disc has more segments")
         self.ser = self._open()
 
         self.lock = threading.Lock()  # serial writes + latency tracker
@@ -148,14 +153,15 @@ class ESP32Interface(object):
         self.ack_pub.publish(m)
 
     def publish_status(self, d, stamp):
-        rpm = P.hall_rpm(d["now_us"], d["hall_last_edge_us"], d["hall_dt_us"], d["hall_count"])
+        rpm = P.driveshaft_rpm(d["now_us"], d["enc_last_edge_us"], d["enc_dt_us"], d["enc_count"],
+                               edges_per_rev=self.edges_per_rev)
         m = ESP32_Status()
         m.header.stamp = stamp
         m.esp_now_us = d["now_us"]
         m.armed = bool(d["armed"])
         for k in ("mode", "rc_age_ms", "jetson_age_ms", "rc_ch3_us", "rc_speed_us", "rc_steer_us", "jetson_seq",
-                  "jetson_speed_us", "jetson_steer_us", "out_speed_us", "out_steer_us", "hall_count",
-                  "hall_last_edge_us", "hall_dt_us", "bad_cmds"):
+                  "jetson_speed_us", "jetson_steer_us", "out_speed_us", "out_steer_us", "enc_count",
+                  "enc_last_edge_us", "enc_dt_us", "bad_cmds"):
             setattr(m, k, d[k])
         m.driveshaft_rpm = rpm
         self.status_pub.publish(m)

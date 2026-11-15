@@ -27,7 +27,7 @@ MODE_NAMES = {MODE_MANUAL: "manual", MODE_AUTO: "auto", MODE_FAILSAFE_NO_RC: "fa
 
 STATUS_FIELDS = ("now_us", "mode", "armed", "rc_age_ms", "jetson_age_ms", "rc_ch3_us", "rc_speed_us",
                  "rc_steer_us", "jetson_seq", "jetson_speed_us", "jetson_steer_us", "out_speed_us",
-                 "out_steer_us", "hall_count", "hall_last_edge_us", "hall_dt_us", "bad_cmds")
+                 "out_steer_us", "enc_count", "enc_last_edge_us", "enc_dt_us", "bad_cmds")
 ACK_FIELDS = ("seq", "rx_us", "mode", "out_speed_us", "out_steer_us")
 _LAYOUT = {"S": STATUS_FIELDS, "A": ACK_FIELDS}
 
@@ -62,18 +62,38 @@ def parse_line(line):
     return out
 
 
-def hall_rpm(now_us, last_edge_us, dt_us, count, stopped_after_us=1000000):
-    """Driveshaft rpm from one status line (one hall edge per revolution).
+def driveshaft_rpm(now_us, last_edge_us, dt_us, count, edges_per_rev=1, stopped_after_us=1000000):
+    """Driveshaft rpm from one status line, from the latest edge interval.
 
-    Between edges the shaft can't be turning faster than one rev per (time since the last edge),
-    so the estimate decays smoothly to 0 when the car stops instead of holding the last value
-    (or flickering to 0 between edges at low speed)."""
+    The encoder is a reflective optical sensor on a segmented disc; the firmware counts rising
+    edges, so edges_per_rev = number of reflective segments (measure it: turn the shaft once by
+    hand and watch enc_count). dt between consecutive rising edges spans one full light+dark
+    period, so it does not depend on the segments' light/dark width ratio - but if the
+    segments are unevenly spaced, use rpm_from_counts over a window instead.
+
+    Between edges the shaft can't be turning faster than one edge per (time since the last
+    edge), so the estimate decays smoothly to 0 when the car stops instead of holding the last
+    value (or flickering to 0 between edges at low speed)."""
+    if edges_per_rev < 1:
+        raise ValueError("edges_per_rev must be >= 1")
     if count < 2 or dt_us <= 0:
         return 0.0
     since = (now_us - last_edge_us) % MICROS_WRAP
     if since > stopped_after_us:
         return 0.0
-    return 60e6 / max(dt_us, since)
+    return 60e6 / (max(dt_us, since) * edges_per_rev)
+
+
+def rpm_from_counts(count0, t0_us, count1, t1_us, edges_per_rev=1):
+    """Average driveshaft rpm between two status lines (edge count + ESP32 time, wrap-safe).
+    Immune to uneven disc segments; resolution is one edge per window."""
+    if edges_per_rev < 1:
+        raise ValueError("edges_per_rev must be >= 1")
+    dt = (t1_us - t0_us) % MICROS_WRAP
+    if dt == 0:
+        return 0.0
+    edges = (count1 - count0) % MICROS_WRAP
+    return edges / float(edges_per_rev) / (dt * 1e-6) * 60.0
 
 
 class LatencyTracker(object):

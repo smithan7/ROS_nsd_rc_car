@@ -36,7 +36,7 @@ def test_parse_status():
     assert (s["rc_ch3_us"], s["rc_speed_us"], s["rc_steer_us"]) == (1100, 1580, 1520)
     assert (s["jetson_seq"], s["jetson_speed_us"], s["jetson_steer_us"]) == (42, 1580, 1520)
     assert (s["out_speed_us"], s["out_steer_us"]) == (1580, 1520)
-    assert (s["hall_count"], s["hall_last_edge_us"], s["hall_dt_us"], s["bad_cmds"]) == (977, 123400000, 25000, 3)
+    assert (s["enc_count"], s["enc_last_edge_us"], s["enc_dt_us"], s["bad_cmds"]) == (977, 123400000, 25000, 3)
 
 
 def test_parse_status_never_seen_ages_are_minus_one():
@@ -63,25 +63,41 @@ def test_parse_accepts_bytes():
     assert P.parse_line(STATUS.encode() + b"\r\n")["kind"] == "S"
 
 
-def test_hall_rpm_from_edge_interval():
+def test_driveshaft_rpm_from_edge_interval():
     # one edge per driveshaft rev; 25 ms between edges = 2400 rpm, last edge just now
-    assert P.hall_rpm(now_us=1000000, last_edge_us=1000000, dt_us=25000, count=10) == pytest.approx(2400.0)
+    assert P.driveshaft_rpm(now_us=1000000, last_edge_us=1000000, dt_us=25000, count=10) == pytest.approx(2400.0)
 
 
-def test_hall_rpm_decays_while_no_new_edge():
+def test_driveshaft_rpm_decays_while_no_new_edge():
     # 100 ms since the last edge: shaft can be at most 600 rpm, even though dt says 2400
-    assert P.hall_rpm(now_us=1100000, last_edge_us=1000000, dt_us=25000, count=10) == pytest.approx(600.0)
+    assert P.driveshaft_rpm(now_us=1100000, last_edge_us=1000000, dt_us=25000, count=10) == pytest.approx(600.0)
 
 
-def test_hall_rpm_zero_when_stopped_or_unknown():
-    assert P.hall_rpm(now_us=3000000, last_edge_us=1000000, dt_us=25000, count=10) == 0.0  # > 1 s
-    assert P.hall_rpm(now_us=1000, last_edge_us=900, dt_us=0, count=1) == 0.0              # one edge only
-    assert P.hall_rpm(now_us=1000, last_edge_us=0, dt_us=0, count=0) == 0.0
+def test_driveshaft_rpm_zero_when_stopped_or_unknown():
+    assert P.driveshaft_rpm(now_us=3000000, last_edge_us=1000000, dt_us=25000, count=10) == 0.0  # > 1 s
+    assert P.driveshaft_rpm(now_us=1000, last_edge_us=900, dt_us=0, count=1) == 0.0              # one edge only
+    assert P.driveshaft_rpm(now_us=1000, last_edge_us=0, dt_us=0, count=0) == 0.0
 
 
-def test_hall_rpm_micros_wraparound():
+def test_driveshaft_rpm_with_several_edges_per_rev():
+    # optical disc with 2 reflective segments: 2 rising edges per driveshaft revolution
+    assert P.driveshaft_rpm(now_us=1000000, last_edge_us=1000000, dt_us=25000, count=10,
+                            edges_per_rev=2) == pytest.approx(1200.0)
+    with pytest.raises(ValueError):
+        P.driveshaft_rpm(1000000, 1000000, 25000, 10, edges_per_rev=0)
+
+
+def test_rpm_from_counts_averages_over_uneven_segments():
+    # 8 edges in 50 ms with 2 edges/rev = 4 revs / 0.05 s = 4800 rpm, whatever the segment spacing
+    assert P.rpm_from_counts(100, 1000000, 108, 1050000, edges_per_rev=2) == pytest.approx(4800.0)
+    assert P.rpm_from_counts(100, 1000000, 100, 1050000, edges_per_rev=2) == 0.0
+    assert P.rpm_from_counts(2 ** 32 - 2, 2 ** 32 - 25000, 2, 25000, edges_per_rev=1) == pytest.approx(4 / 0.05 * 60)
+    assert P.rpm_from_counts(100, 1000000, 108, 1000000, edges_per_rev=2) == 0.0  # no time elapsed
+
+
+def test_driveshaft_rpm_micros_wraparound():
     last = 2 ** 32 - 10000
-    assert P.hall_rpm(now_us=15000, last_edge_us=last, dt_us=25000, count=10) == pytest.approx(2400.0)
+    assert P.driveshaft_rpm(now_us=15000, last_edge_us=last, dt_us=25000, count=10) == pytest.approx(2400.0)
 
 
 def test_latency_tracker_round_trip():

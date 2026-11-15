@@ -14,8 +14,8 @@ int32 jetson_speed_us
 int32 jetson_steer_us
 int32 out_speed_us         # what the ESC / servo are actually given
 int32 out_steer_us
-uint32 hall_count          # driveshaft revolutions since boot
-uint32 hall_last_edge_us
-uint32 hall_dt_us
+uint32 enc_count          # optical encoder rising edges since boot (edges_per_rev per driveshaft rev)
+uint32 enc_last_edge_us
+uint32 enc_dt_us
 uint32 bad_cmds
-float32 driveshaft_rpm     # from the hall fields, decays to 0 when stopped
+float32 driveshaft_rpm     # from the encoder fields and ~encoder_edges_per_rev; decays to 0 when stopped
