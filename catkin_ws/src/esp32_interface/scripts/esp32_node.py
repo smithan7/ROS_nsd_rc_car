@@ -38,12 +38,9 @@ def find_esp32():
 
 class ESP32Interface(object):
     def __init__(self):
-        port = rospy.get_param("~port", "") or find_esp32()
-        baud = int(rospy.get_param("~baud", P.BAUD))
-        if not port:
-            raise RuntimeError("no ESP32 serial port found (set ~port)")
-        self.ser = self._open(port, baud)
-        rospy.loginfo("esp32_node: %s @ %d baud", port, baud)
+        self.port_param = rospy.get_param("~port", "")
+        self.baud = int(rospy.get_param("~baud", P.BAUD))
+        self.ser = self._open()
 
         self.lock = threading.Lock()  # serial writes + latency tracker
         self.seq = 0
@@ -62,15 +59,41 @@ class ESP32Interface(object):
         self.reader.daemon = True
         self.reader.start()
 
-    @staticmethod
-    def _open(port, baud):
-        for attempt in range(50):
+    def _open(self):
+        """Open the port, retrying until it appears (USB re-enumeration can rename it).
+
+        DTR/RTS are held low: on most ESP32 dev boards they drive EN/IO0, so the default
+        open toggles them and resets the ESP32 - a node restart must not reboot the car."""
+        attempt = 0
+        while not rospy.is_shutdown():
+            port = self.port_param or find_esp32()
             try:
-                return serial.Serial(port, baud, timeout=0.5)
-            except serial.SerialException as e:
-                rospy.logwarn("esp32_node: open %s failed (%d): %s", port, attempt, e)
+                if not port:
+                    raise serial.SerialException("no Silicon Labs USB-serial device")
+                ser = serial.Serial()
+                ser.port, ser.baudrate, ser.timeout = port, self.baud, 0.5
+                ser.dtr = False
+                ser.rts = False
+                ser.open()
+                rospy.loginfo("esp32_node: %s @ %d baud", port, self.baud)
+                return ser
+            except (serial.SerialException, OSError) as e:
+                attempt += 1
+                rospy.logwarn_throttle(2.0, "esp32_node: open failed (%d): %s" % (attempt, e))
                 rospy.sleep(0.2)
-        raise RuntimeError("could not open %s" % port)
+        return None
+
+    def _reconnect(self, err):
+        rospy.logerr("esp32_node: serial lost (%s); reopening - the ESP32 fails safe meanwhile" % err)
+        with self.lock:
+            try:
+                self.ser.close()
+            except Exception:
+                pass
+            self.ser = None
+        ser = self._open()
+        with self.lock:
+            self.ser = ser
 
     # ---- Jetson -> ESP32 ----------------------------------------------------------------
     def on_command(self, msg):
@@ -80,18 +103,27 @@ class ESP32Interface(object):
             rospy.logwarn_throttle(1.0, "esp32_node: command not sent: %s" % e)
             return
         with self.lock:
-            self.latency.sent(self.seq, rospy.get_time())
-            self.ser.write(line)
+            if self.ser is None:  # reconnecting: drop it, a stale command is worse than none
+                return
+            try:
+                self.latency.sent(self.seq, rospy.get_time())
+                self.ser.write(line)
+            except (serial.SerialException, OSError) as e:
+                rospy.logerr_throttle(1.0, "esp32_node: write failed: %s" % e)
+                return
             self.seq = (self.seq + 1) % P.SEQ_MOD
 
     # ---- ESP32 -> Jetson ----------------------------------------------------------------
     def read_loop(self):
         while not rospy.is_shutdown():
+            ser = self.ser
+            if ser is None:
+                rospy.sleep(0.05)
+                continue
             try:
-                raw = self.ser.readline()
-            except serial.SerialException as e:
-                rospy.logerr_throttle(1.0, "esp32_node: serial read failed: %s" % e)
-                rospy.sleep(0.1)
+                raw = ser.readline()
+            except (serial.SerialException, OSError, TypeError) as e:  # TypeError: port closed under us
+                self._reconnect(e)
                 continue
             if not raw:
                 continue
