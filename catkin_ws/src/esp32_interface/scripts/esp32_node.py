@@ -1,151 +1,194 @@
 #!/usr/bin/env python
+"""ROS bridge to the ESP32 autopilot interface (serial protocol v2, see esp32_protocol.py).
 
+Latency design: every ui_commands message is written to the ESP32 the moment it arrives
+(tcp_nodelay subscriber, no resend timer), and a dedicated thread blocks on readline() so each
+line is stamped as soon as it is read. Nothing re-sends a stale command: if the upstream node
+dies, commands stop and the ESP32's own 200 ms timeout puts the car in failsafe.
+
+Publishes
+  esp32_status (ESP32_Status, 50 Hz)       full status, stamped on read
+  esp32_ack (ESP32_Ack, one per command)   timestamp echo + round-trip time
+  steve_measured / xavier_measured (PWM_Measure), driveshaft_rotation_speed (Driveshaft_Encoder)
+    - the old topics, kept for ui_node; now stamped
+Subscribes
+  ui_commands (PWM_Cmd): steer / speed in microseconds; publish at >= 5 Hz (50 Hz intended)
+Params
+  ~port (default: first Silicon Labs USB-serial device), ~baud (default 460800),
+  ~encoder_edges_per_rev (reflective segments on the driveshaft disc; default 1 - measure it)
+"""
+
+from __future__ import print_function
+
+import threading
 
 import rospy
-from esp32_interface.msg import PWM_Measure
-from esp32_interface.msg import PWM_Cmd
-from esp32_interface.msg import Driveshaft_Encoder
-from std_msgs.msg import String
-
 import serial
 import serial.tools.list_ports
 
+import esp32_protocol as P
+from esp32_interface.msg import Driveshaft_Encoder, ESP32_Ack, ESP32_Status, PWM_Cmd, PWM_Measure
 
-class ESP32_Interface:
-    steer_cmd = 0.0
-    speed_cmd = 0.0
-    pwm_ramp_rate = 10.0 # currently not used - I am not confident this is actually a good idea/useful even for sys id
-    last_driveshaft_time = 0.0
 
+def find_esp32():
+    for p in serial.tools.list_ports.comports():
+        if p.manufacturer is not None and "Silicon Labs" in p.manufacturer:
+            return p.device
+    return None
+
+
+class ESP32Interface(object):
     def __init__(self):
+        self.port_param = rospy.get_param("~port", "")
+        self.baud = int(rospy.get_param("~baud", P.BAUD))
+        # reflective segments on the driveshaft disc (rising edges per rev) - measure it
+        self.edges_per_rev = int(rospy.get_param("~encoder_edges_per_rev", 1))
+        if not rospy.has_param("~encoder_edges_per_rev"):
+            rospy.logwarn("esp32_node: ~encoder_edges_per_rev not set, assuming 1 - rpm is wrong if the disc has more segments")
+        self.ser = self._open()
 
-        self.pwm_ser = serial.Serial()
-        attempts = 0
-        pwm_ser_open = False
+        self.lock = threading.Lock()  # serial writes + latency tracker
+        self.seq = 0
+        self.latency = P.LatencyTracker()
+        self.bad_lines = 0
+        self.last_mode = None
 
-        self.list_serial_ports()
-        self.esp32_port = self.find_esp32()
-        # print("esp32_port: ", self.esp32_port)
-        while not pwm_ser_open and attempts < 50:
-            if not pwm_ser_open:
-                try:
-                    self.pwm_ser = serial.Serial(self.esp32_port, 115200, timeout=0.1)
-                    pwm_ser_open = True
-                except:
-                    print("ESP32_Interface::Failed to open pwm serial port: ", attempts)
-                    attempts += 1
-                    
-        self.pwm_ser.flush()
+        self.status_pub = rospy.Publisher("esp32_status", ESP32_Status, queue_size=50)
+        self.ack_pub = rospy.Publisher("esp32_ack", ESP32_Ack, queue_size=50)
+        self.steve_pub = rospy.Publisher("steve_measured", PWM_Measure, queue_size=10)
+        self.xavier_pub = rospy.Publisher("xavier_measured", PWM_Measure, queue_size=10)
+        self.driveshaft_pub = rospy.Publisher("driveshaft_rotation_speed", Driveshaft_Encoder, queue_size=10)
+        rospy.Subscriber("ui_commands", PWM_Cmd, self.on_command, queue_size=1, tcp_nodelay=True)
 
-        self.steve_cmd_pub = rospy.Publisher('steve_measured', PWM_Measure, queue_size=10)
-        self.xavier_cmd_pub = rospy.Publisher('xavier_measured', PWM_Measure, queue_size=10)
-        self.driveshaft_encoder_pub = rospy.Publisher('driveshaft_rotation_speed', Driveshaft_Encoder, queue_size=10)
-        self.cmds_sub = rospy.Subscriber("ui_commands", PWM_Cmd, self.cmds_sub_callback)
-        self.param_sub = rospy.Subscriber("esp32_params", String, self.param_sub_callback)
+        self.reader = threading.Thread(target=self.read_loop, name="esp32_reader")
+        self.reader.daemon = True
+        self.reader.start()
 
-        rospy.Timer(rospy.Duration(1.0/100.0), self.read_serial_buffer)
-        rospy.Timer(rospy.Duration(1.0/20.0), self.write_serial_comands)
+    def _open(self):
+        """Open the port, retrying until it appears (USB re-enumeration can rename it).
 
-    def param_sub_callback(self, msg):
-        # this reads in the string from the UI updates params
-        p_msg = str(msg.data).splot(',')
-        if p_msg[0] == 'ramp rate' and float(p_msg[1]) > 0.0 and float(p_msg[1]) <= 100.0:
-            # update ramp rate
-            self.pwm_ramp_rate = float(p_msg[1])
-        else:
-            # for some reason it did not parse
-            print("esp32_node::param_sub_callback::received bad msg: ", msg.data)
-
-    def cmds_sub_callback(self, msg):
-        # rospy.loginfo(rospy.get_caller_id() + "I heard %s", msg)
-        self.speed_cmd= msg.speed
-        self.steer_cmd = msg.steer
-
-    def read_serial_buffer(self, event=None):
-        # self.pwm_ser.flushInput()
-        while self.pwm_ser.in_waiting > 0:
-            pwm_bytes = self.pwm_ser.readline()
-            # print("pwm_bytes: ", pwm_bytes)
+        DTR/RTS are held low: on most ESP32 dev boards they drive EN/IO0, so the default
+        open toggles them and resets the ESP32 - a node restart must not reboot the car."""
+        attempt = 0
+        while not rospy.is_shutdown():
+            port = self.port_param or find_esp32()
             try:
-                decoded_pwm_strings = str(pwm_bytes[0:len(pwm_bytes)-2].decode("utf-8")).split(',')
-                # print("decoded pwm string[", len(decoded_pwm_strings), "]: ", decoded_pwm_strings)
-                if decoded_pwm_strings[0] == 'C':
-                    # This is a measured PWM report
-                    steve_lag_time = int(decoded_pwm_strings[1]) # time since last status message
-                    xavier_lag_time = int(decoded_pwm_strings[2]) # time since last xavier message
-                    steve_status_flag = int(decoded_pwm_strings[3])
-                    steve_cntrl_command = int(decoded_pwm_strings[4])
-                    steve_speed_command = int(decoded_pwm_strings[5])
-                    steve_steer_command = int(decoded_pwm_strings[6])
-                    xavier_status_flag = int(decoded_pwm_strings[7])
-                    xavier_speed_command = int(decoded_pwm_strings[8])
-                    xavier_steer_command = int(decoded_pwm_strings[9])
-                    driveshaft_time = int(decoded_pwm_strings[10])
-                    driveshaft_rpm = 60000000. / float(decoded_pwm_strings[11])
-                    
-                    # checksum = (z_command + z_steer + z_speed) % 1000
-                    # print("checksum: ", checksum)
-                    # if z_checksum == checksum:
+                if not port:
+                    raise serial.SerialException("no Silicon Labs USB-serial device")
+                ser = serial.Serial()
+                ser.port, ser.baudrate, ser.timeout = port, self.baud, 0.5
+                ser.dtr = False
+                ser.rts = False
+                ser.open()
+                rospy.loginfo("esp32_node: %s @ %d baud", port, self.baud)
+                return ser
+            except (serial.SerialException, OSError) as e:
+                attempt += 1
+                rospy.logwarn_throttle(2.0, "esp32_node: open failed (%d): %s" % (attempt, e))
+                rospy.sleep(0.2)
+        return None
 
-                    msg = PWM_Measure()
-                    msg.time = steve_lag_time
-                    msg.status = steve_status_flag
-                    msg.control = steve_cntrl_command
-                    msg.steer = steve_steer_command
-                    msg.speed = steve_speed_command
-                    # print("steve_msg: ", msg)
-                    self.steve_cmd_pub.publish(msg)
+    def _reconnect(self, err):
+        rospy.logerr("esp32_node: serial lost (%s); reopening - the ESP32 fails safe meanwhile" % err)
+        with self.lock:
+            try:
+                self.ser.close()
+            except Exception:
+                pass
+            self.ser = None
+        ser = self._open()
+        with self.lock:
+            self.ser = ser
 
-                    msg = PWM_Measure()
-                    msg.time = xavier_lag_time
-                    msg.status = xavier_status_flag
-                    msg.control = steve_cntrl_command
-                    msg.steer = xavier_steer_command
-                    msg.speed = xavier_speed_command
-                    self.xavier_cmd_pub.publish(msg)
-
-                    if driveshaft_time > self.last_driveshaft_time:
-                        msg = Driveshaft_Encoder()
-                        msg.rpm = driveshaft_rpm
-                        self.driveshaft_encoder_pub.publish(msg)
-                    else:
-                        msg = Driveshaft_Encoder()
-                        msg.rpm = 0.0
-                        self.driveshaft_encoder_pub.publish(msg)
-                    self.last_driveshaft_time = driveshaft_time
-
-                else:
-                    print("ESP32 Node: failed to parse serial message")
-                    print("decoded pwm string[", len(decoded_pwm_strings), "]: ", decoded_pwm_strings)
-            except:
-                print("ESP32_Iterface::Error decoding and splitting pwm bytes")
-        
-    def write_serial_comands(self, event=None):
+    # ---- Jetson -> ESP32 ----------------------------------------------------------------
+    def on_command(self, msg):
         try:
-                cmd_str = ('C,' + str(self.steer_cmd) + ',' + str(self.speed_cmd) + ',' + str((self.steer_cmd + self.speed_cmd) % 1000) + '\r\n').encode("utf-8")
-                self.pwm_ser.write(cmd_str)
-        except:
-            print("ESP32_ Interface::Error writing to Arduino")
+            line = P.format_command(self.seq, msg.steer, msg.speed)
+        except ValueError as e:
+            rospy.logwarn_throttle(1.0, "esp32_node: command not sent: %s" % e)
+            return
+        with self.lock:
+            if self.ser is None:  # reconnecting: drop it, a stale command is worse than none
+                return
+            try:
+                self.latency.sent(self.seq, rospy.get_time())
+                self.ser.write(line)
+            except (serial.SerialException, OSError) as e:
+                rospy.logerr_throttle(1.0, "esp32_node: write failed: %s" % e)
+                return
+            self.seq = (self.seq + 1) % P.SEQ_MOD
 
-    def find_esp32(self, port=None):
-        """Get the name of the port that is connected to Arduino."""
-        if port is None:
-            ports = serial.tools.list_ports.comports()
-            for p in ports:
-                # print("p.manufacturer: ", p.manufacturer, " and ", p)
-                if p.manufacturer is not None and "Silicon Labs" in p.manufacturer:
-                    port = p.device
-        return port
+    # ---- ESP32 -> Jetson ----------------------------------------------------------------
+    def read_loop(self):
+        while not rospy.is_shutdown():
+            ser = self.ser
+            if ser is None:
+                rospy.sleep(0.05)
+                continue
+            try:
+                raw = ser.readline()
+            except (serial.SerialException, OSError, TypeError) as e:  # TypeError: port closed under us
+                self._reconnect(e)
+                continue
+            if not raw:
+                continue
+            stamp = rospy.Time.now()
+            d = P.parse_line(raw)
+            if d is None:
+                self.bad_lines += 1
+                rospy.logwarn_throttle(5.0, "esp32_node: %d unparsed lines, last %r" % (self.bad_lines, raw[:80]))
+            elif d["kind"] == "A":
+                self.publish_ack(d, stamp)
+            else:
+                self.publish_status(d, stamp)
 
-    def list_serial_ports(self):
-        ports = serial.tools.list_ports.comports()
+    def publish_ack(self, d, stamp):
+        with self.lock:
+            rtt = self.latency.acked(d["seq"], stamp.to_sec())
+        m = ESP32_Ack()
+        m.header.stamp = stamp
+        m.seq, m.esp_rx_us, m.mode = d["seq"], d["rx_us"], d["mode"]
+        m.out_speed_us, m.out_steer_us = d["out_speed_us"], d["out_steer_us"]
+        m.round_trip_s = float("nan") if rtt is None else rtt
+        self.ack_pub.publish(m)
 
-        for port, desc, hwid in sorted(ports):
-                print("{}: {} [{}]".format(port, desc, hwid))
+    def publish_status(self, d, stamp):
+        rpm = P.driveshaft_rpm(d["now_us"], d["enc_last_edge_us"], d["enc_dt_us"], d["enc_count"],
+                               edges_per_rev=self.edges_per_rev)
+        m = ESP32_Status()
+        m.header.stamp = stamp
+        m.esp_now_us = d["now_us"]
+        m.armed = bool(d["armed"])
+        for k in ("mode", "rc_age_ms", "jetson_age_ms", "rc_ch3_us", "rc_speed_us", "rc_steer_us", "jetson_seq",
+                  "jetson_speed_us", "jetson_steer_us", "out_speed_us", "out_steer_us", "enc_count",
+                  "enc_last_edge_us", "enc_dt_us", "bad_cmds"):
+            setattr(m, k, d[k])
+        m.driveshaft_rpm = rpm
+        self.status_pub.publish(m)
 
-if __name__ == '__main__':
+        if d["mode"] != self.last_mode:
+            log = rospy.loginfo if d["mode"] >= 0 else rospy.logwarn
+            log("esp32_node: mode %s", P.MODE_NAMES.get(d["mode"], d["mode"]))
+            self.last_mode = d["mode"]
+
+        # legacy topics (ui_node)
+        steve = PWM_Measure()
+        steve.header.stamp = stamp
+        steve.time, steve.status, steve.control = d["rc_age_ms"], d["mode"], d["rc_ch3_us"]
+        steve.steer, steve.speed = d["rc_steer_us"], d["rc_speed_us"]
+        self.steve_pub.publish(steve)
+        xavier = PWM_Measure()
+        xavier.header.stamp = stamp
+        xavier.time, xavier.status, xavier.control = d["jetson_age_ms"], d["mode"], d["rc_ch3_us"]
+        xavier.steer, xavier.speed = d["jetson_steer_us"], d["jetson_speed_us"]
+        self.xavier_pub.publish(xavier)
+        enc = Driveshaft_Encoder()
+        enc.header.stamp = stamp
+        enc.rpm = rpm
+        self.driveshaft_pub.publish(enc)
+
+
+if __name__ == "__main__":
     rospy.init_node("ESP32_Interface")
-    # Create an instance of Temperature sensor
-    ei = ESP32_Interface()
-    # Create a ROS Timer for reading data
+    ESP32Interface()
     rospy.spin()
