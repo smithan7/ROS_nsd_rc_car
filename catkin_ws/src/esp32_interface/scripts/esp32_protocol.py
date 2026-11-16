@@ -1,7 +1,8 @@
 """Serial protocol v2 between the Jetson and the ESP32 autopilot interface firmware.
 
-Pure Python, no ROS, Python 2 and 3. The firmware and the full field list live in
-smithan7/not-so-dumb-rc-car AutonomousCar/code/esp32_autopilot_interface/.
+Pure Python, no ROS, Python 2 and 3. Canonical copy: smithan7/not-so-dumb-rc-car
+AutonomousCar/code/esp32_protocol.py, next to the firmware (esp32_autopilot_interface/).
+ROS_nsd_rc_car esp32_interface/scripts/esp32_protocol.py is a copy - keep them identical.
 
   Jetson -> ESP32   C,<seq>,<steer_us>,<speed_us>,<(seq+steer+speed)%1000>\\n
   ESP32 -> Jetson   A,<seq>,<rx_us>,<mode>,<out_speed_us>,<out_steer_us>,$        (per command)
